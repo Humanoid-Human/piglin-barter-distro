@@ -20,11 +20,13 @@ fn main() {
         v = calculate_dist(num);
         for d in v {
             println!("{}:", d.name);
-            println!("    50th percentile: {}", d.percentile(0.5));
-            println!("    90th percentile: {}", d.percentile(0.9));
-            println!("    99th percentile: {}", d.percentile(0.99));
-            println!("    100th percentile: {}", d.max);
-            //println!("    PDF: {:?}", d.pdf);
+            let fifty = d.percentile(0.5);
+            let ninety = d.percentile(0.9);
+            let ninety_nine = d.percentile(0.99);
+            println!("    50th percentile: {} ({}s + {})", fifty, (fifty as usize) / 64, fifty % 64);
+            println!("    90th percentile: {} ({}s + {})", ninety, (ninety as usize) / 64, ninety % 64);
+            println!("    99th percentile: {} ({}s + {})", ninety_nine, (ninety_nine as usize) / 64, ninety_nine % 64);
+            println!("    100th percentile: {} ({}s + {})", d.max, (d.max as usize) / 64, d.max % 64);
         }
     }
 }
