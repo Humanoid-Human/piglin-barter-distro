@@ -42,7 +42,7 @@ impl Dist {
         self.pdf = new_pdf;
     }
 
-    pub fn add_self(&mut self) {
+    pub fn double(&mut self) {
         let new_max: usize = self.max * 2;
         let mut new_pdf: Vec<f64> = Vec::with_capacity(new_max);
         for i in 0..new_max+1 {

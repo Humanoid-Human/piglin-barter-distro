@@ -20,13 +20,13 @@ fn main() {
 
     num = input.trim().parse().expect("Bad input");
 
-    let v = calculate_dist(num);
+    let v = calculate_dist(num.try_into().unwrap());
     for d in v {
         d.print(vec![0.5, 0.9, 0.95, 0.99, 1.0]);
     }
 }
 
-fn calculate_dist(n: usize) -> Vec<Dist> {
+fn calculate_dist(n: u16) -> Vec<Dist> {
     let gr_bs = Dist::from("Gravel & Blackstone", &GR_BS);
     let ss_nb = Dist::from("Soul Sand & Nether Brick", &SS_NB);
     let cry = Dist::from("Crying Obsidian", &CRY);
@@ -34,15 +34,20 @@ fn calculate_dist(n: usize) -> Vec<Dist> {
     let quartz = Dist::from("Nether Quartz", &QUARTZ);
 
     let mut list = [gr_bs, ss_nb, cry, obs, quartz];
-    let mut doublings = 0;
-    while (1 << (doublings + 1)) < n {
-        doublings += 1;
-    }
-    let adds = n - (1 << doublings);
+
+    if n == 1 { return Vec::from(list); }
+
+    // skip the first 1, because we already have one of the pdf by default
+    let start = 14 - n.leading_zeros();
 
     for dist in list.iter_mut() {
-        for _ in 0..doublings { dist.add_self(); }
-        for _ in 0..adds { dist.add_original(); }
+        // iterate over the bits of n
+        for i in 0..start + 1 {
+            dist.double();
+            if (n >> (start - i)) & 1 != 0 {
+                dist.add_original();
+            }
+        }
     }
     Vec::from(list)
 }
