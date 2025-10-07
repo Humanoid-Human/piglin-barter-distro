@@ -3,36 +3,36 @@ const DENOM: f64 = 459.0;
 pub struct Dist {
     pub max: usize,
     pub pdf: Vec<f64>,
-    pub name: String
+    pub name: String,
+    pub original: &'static ConstDist
 }
 
 impl Dist {
-    fn new(name: &str, max: usize) -> Dist {
+    fn new(name: &str, max: usize, original: &'static ConstDist) -> Dist {
         Dist {
             max,
             pdf: vec![0.0; max + 1],
-            name: String::from(name)
+            name: String::from(name),
+            original
         }
     }
 
-    pub fn from_bounds(name: &str, max: usize, min: usize, chance: f64) -> Dist {
-        let mut out = Dist::new(name, max);
-        out.pdf[0] = (DENOM - chance) / DENOM;
-        let item_chance = chance / DENOM / ((1 + max - min) as f64);
-        for v in &mut out.pdf[min..] {
-            *v = item_chance;
+    pub fn from(name: &str, d: &'static ConstDist) -> Dist {
+        let mut out = Dist::new(name, d.max, d);
+        for (i, v) in (d.pdf[..d.max+1]).iter().enumerate() {
+            out.pdf[i] = *v;
         }
         out
     }
 
-    pub fn add(&mut self, other: &Dist) {
-        let new_max: usize = self.max + other.max;
-        let mut new_pdf: Vec<f64> = Vec::new();
+    pub fn add_original(&mut self) {
+        let new_max: usize = self.max + self.original.max;
+        let mut new_pdf: Vec<f64> = Vec::with_capacity(new_max);
         for i in 0..new_max+1 {
             let mut sum: f64 = 0.0;
             for j in 0..i+1 {
                 let self_val: f64 = if j <= self.max {self.pdf[j]} else {0.0};
-                let other_val: f64 = if i - j <= other.max {other.pdf[i-j]} else {0.0};
+                let other_val: f64 = if i - j <= self.original.max {self.original.pdf[i-j]} else {0.0};
                 sum += self_val * other_val;
             }
             new_pdf.push(sum);
@@ -44,7 +44,7 @@ impl Dist {
 
     pub fn add_self(&mut self) {
         let new_max: usize = self.max * 2;
-        let mut new_pdf: Vec<f64> = Vec::new();
+        let mut new_pdf: Vec<f64> = Vec::with_capacity(new_max);
         for i in 0..new_max+1 {
             let mut sum: f64 = 0.0;
             for j in 0..i+1 {
@@ -58,14 +58,6 @@ impl Dist {
         self.pdf = new_pdf;
     }
 
-    pub fn clone(&self) -> Dist {
-        Dist {
-            name: (&self.name).clone(),
-            max: self.max,
-            pdf: (&self.pdf).clone(),
-        }
-    }
-
     pub fn percentile(&self, n: f64) -> usize {
         let mut index = 0;
         let mut sum = n;
@@ -74,5 +66,37 @@ impl Dist {
             index += 1;
         }
         index
+    }
+
+    pub fn print(&self, percentiles: Vec<f64>) {
+        println!("{}:", self.name);
+        for p in percentiles {
+            let val = self.percentile(p);
+            println!("    {}th percentile: {} ({}s + {})",
+                (100.0 * p) as u8,
+                val,
+                val / 64,
+                val % 64
+            )
+        }
+    }
+}
+
+pub struct ConstDist {
+    pdf: [f64; 17],
+    max: usize
+}
+
+impl ConstDist {
+    pub const fn from_bounds(max: usize, min: usize, chance: f64) -> ConstDist {
+        let item_chance = chance / DENOM / ((1 + max - min) as f64);
+        let mut pdf = [0.0; 17];
+        pdf[0] = (DENOM - chance) / DENOM;
+        let mut i = min;
+        while i <= max {
+            pdf[i] = item_chance;
+            i += 1;
+        }
+        ConstDist { pdf, max }
     }
 }

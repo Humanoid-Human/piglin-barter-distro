@@ -1,66 +1,48 @@
 use std::io;
 
 pub mod dist;
-use crate::dist::Dist;
+use crate::dist::{Dist, ConstDist};
+
+const GR_BS: ConstDist = ConstDist::from_bounds(16, 8, 40.0);
+const SS_NB: ConstDist = ConstDist::from_bounds(8, 2, 40.0);
+const QUARTZ: ConstDist = ConstDist::from_bounds(12, 5, 20.0);
+const OBS: ConstDist = ConstDist::from_bounds(1, 1, 40.0);
+const CRY: ConstDist = ConstDist::from_bounds(3, 1, 40.0);
 
 fn main() {
 
     let mut input = String::new();
-    let mut num: usize;
-    let mut v: Vec<Dist>;
+    let num: usize;
+    println!("Input number of piglins");
+    io::stdin()
+        .read_line(&mut input)
+        .expect("Failed to read line");
 
-    loop {
-        println!("Input number of piglins");
-        io::stdin()
-            .read_line(&mut input)
-            .expect("Failed to read line");
+    num = input.trim().parse().expect("Bad input");
 
-        num = input.trim().parse().expect("Bad input");
-
-        v = calculate_dist(num);
-        for d in v {
-            println!("{}:", d.name);
-            let fifty = d.percentile(0.5);
-            let ninety = d.percentile(0.9);
-            let ninety_nine = d.percentile(0.99);
-            println!("    50th percentile: {} ({}s + {})", fifty, (fifty as usize) / 64, fifty % 64);
-            println!("    90th percentile: {} ({}s + {})", ninety, (ninety as usize) / 64, ninety % 64);
-            println!("    99th percentile: {} ({}s + {})", ninety_nine, (ninety_nine as usize) / 64, ninety_nine % 64);
-            println!("    100th percentile: {} ({}s + {})", d.max, (d.max as usize) / 64, d.max % 64);
-        }
+    let v = calculate_dist(num);
+    for d in v {
+        d.print(vec![0.5, 0.9, 0.95, 0.99, 1.0]);
     }
 }
 
 fn calculate_dist(n: usize) -> Vec<Dist> {
-    let gravel_c = Dist::from_bounds("Gravel", 16, 8, 40.0);
-    let blackstone_c = Dist::from_bounds("Blackstone", 16, 8, 40.0);
-    let soul_sand_c = Dist::from_bounds("Soul Sand", 8, 2, 40.0);
-    let crying_obsidian_c = Dist::from_bounds("Crying Obsidian", 3, 1, 40.0);
-    let obsidian_c = Dist::from_bounds("Obsidian", 1, 1, 40.0);
-    let nether_brick_c = Dist::from_bounds("Nether Brick", 8, 2, 40.0);
-    let nether_quartz_c = Dist::from_bounds("Nether Quartz", 12, 5, 20.0);
+    let gr_bs = Dist::from("Gravel & Blackstone", &GR_BS);
+    let ss_nb = Dist::from("Soul Sand & Nether Brick", &SS_NB);
+    let cry = Dist::from("Crying Obsidian", &CRY);
+    let obs = Dist::from("Obsidian", &OBS);
+    let quartz = Dist::from("Nether Quartz", &QUARTZ);
 
-    let gravel = gravel_c.clone();
-    let blackstone = blackstone_c.clone();
-    let soul_sand = soul_sand_c.clone();
-    let crying_obsidian = crying_obsidian_c.clone();
-    let obsidian = obsidian_c.clone();
-    let nether_brick = nether_brick_c.clone();
-    let nether_quartz = nether_quartz_c.clone();
-
-    let v_const = vec![gravel_c, blackstone_c, soul_sand_c, crying_obsidian_c, obsidian_c, nether_brick_c, nether_quartz_c];
-    let mut v_mut = vec![gravel, blackstone, soul_sand, crying_obsidian, obsidian, nether_brick, nether_quartz];
-    
-    for (index, d) in v_const.iter().enumerate() {
-        let mut count: usize = 1;
-        while 2 * count <= n {
-            v_mut[index].add_self();
-            count *= 2;
-        }
-        while count < n {
-            v_mut[index].add(d);
-            count += 1;
-        }
+    let mut list = [gr_bs, ss_nb, cry, obs, quartz];
+    let mut doublings = 0;
+    while (1 << (doublings + 1)) < n {
+        doublings += 1;
     }
-    v_mut
+    let adds = n - (1 << doublings);
+
+    for dist in list.iter_mut() {
+        for _ in 0..doublings { dist.add_self(); }
+        for _ in 0..adds { dist.add_original(); }
+    }
+    Vec::from(list)
 }
