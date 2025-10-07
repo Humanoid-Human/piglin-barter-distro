@@ -38,6 +38,7 @@ impl Dist {
         self.pdf = new_pdf;
     }
 
+    // TODO: take advantage of the fact that it's adding to itself to speed this up.
     pub fn double(&mut self) {
         let new_max: usize = self.max * 2;
         let mut new_pdf: Vec<f64> = vec![0.0; new_max + 1];
@@ -57,7 +58,9 @@ impl Dist {
         self.pdf = new_pdf;
     }
 
+    // Find the value for the given percentile. Input should be in [0, 1]
     pub fn percentile(&self, n: f64) -> usize {
+        if n == 1.0 { return self.max; }
         let mut index = 0;
         let mut sum = n;
         while sum > 0.0 && index < self.max {
@@ -67,6 +70,7 @@ impl Dist {
         index
     }
 
+    // print name and a list of given percentiles.
     pub fn print(&self, percentiles: Vec<f64>) {
         println!("{}:", self.name);
         for p in percentiles {
