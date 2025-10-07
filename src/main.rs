@@ -1,4 +1,4 @@
-use std::io;
+use std::{io, time::Instant};
 
 pub mod dist;
 use crate::dist::{Dist, ConstDist};
@@ -12,18 +12,23 @@ const CRY: ConstDist = ConstDist::from_bounds(3, 1, 40.0);
 fn main() {
 
     let mut input = String::new();
-    let num: usize;
     println!("Input number of piglins");
     io::stdin()
         .read_line(&mut input)
         .expect("Failed to read line");
 
-    num = input.trim().parse().expect("Bad input");
+    let num: usize = input.trim().parse().expect("Bad input");
+
+    let timer = Instant::now();
 
     let v = calculate_dist(num.try_into().unwrap());
+
     for d in v {
-        d.print(vec![0.5, 0.9, 0.95, 0.99, 1.0]);
+        d.print(vec![0.5, 0.9, 0.95, 0.99]);
     }
+
+    let elapsed = timer.elapsed();
+    println!("Time: {:.2?}", elapsed);
 }
 
 fn calculate_dist(n: u16) -> Vec<Dist> {
@@ -49,5 +54,6 @@ fn calculate_dist(n: u16) -> Vec<Dist> {
             }
         }
     }
+
     Vec::from(list)
 }
