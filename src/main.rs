@@ -21,9 +21,9 @@ fn main() {
 
     let timer = Instant::now();
 
-    let v = calculate_dist(num.try_into().unwrap());
+    let l = calculate_dist(num.try_into().unwrap());
 
-    for d in v {
+    for d in l {
         d.print(vec![0.5, 0.9, 0.95, 0.99]);
     }
 
@@ -31,7 +31,7 @@ fn main() {
     println!("Time: {:.2?}", elapsed);
 }
 
-fn calculate_dist(n: u16) -> Vec<Dist> {
+fn calculate_dist(n: u16) -> [Dist; 5] {
     let gr_bs = Dist::from("Gravel & Blackstone", &GR_BS);
     let ss_nb = Dist::from("Soul Sand & Nether Brick", &SS_NB);
     let cry = Dist::from("Crying Obsidian", &CRY);
@@ -40,20 +40,22 @@ fn calculate_dist(n: u16) -> Vec<Dist> {
 
     let mut list = [gr_bs, ss_nb, cry, obs, quartz];
 
-    if n == 1 { return Vec::from(list); }
+    if n == 1 { return list; }
 
     // skip the first 1, because we already have one of the pdf by default
     let start = 14 - n.leading_zeros();
 
-    for dist in list.iter_mut() {
-        // iterate over the bits of n
-        for i in 0..start + 1 {
+    list.iter_mut().for_each(
+        |dist| {
+            // iterate over the bits of n
+            for i in 0..start + 1 {
             dist.double();
             if (n >> (start - i)) & 1 != 0 {
                 dist.add_original();
             }
         }
-    }
+        }
+    );
 
-    Vec::from(list)
+    list
 }

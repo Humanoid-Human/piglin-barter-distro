@@ -1,3 +1,5 @@
+use rayon::prelude::*;
+
 const DENOM: f64 = 459.0;
 
 pub struct Dist {
@@ -12,7 +14,7 @@ impl Dist {
         Dist {
             max,
             pdf: vec![0.0; max + 1],
-            name: name,
+            name,
             original
         }
     }
@@ -28,15 +30,17 @@ impl Dist {
     pub fn add_original(&mut self) {
         let new_max: usize = self.max + self.original.max;
         let mut new_pdf: Vec<f64> = vec![0.0; new_max + 1];
-        for (i, v) in new_pdf.iter_mut().enumerate() {
-            let mut sum: f64 = 0.0;
-            for j in 0..i+1 {
-                let self_val: f64 = if j <= self.max {self.pdf[j]} else {0.0};
-                let other_val: f64 = if i - j <= self.original.max {self.original.pdf[i-j]} else {0.0};
-                sum += self_val * other_val;
+        new_pdf.par_iter_mut().enumerate().for_each(
+            |(i, v)| {
+                let mut sum: f64 = 0.0;
+                for j in 0..i+1 {
+                    let self_val: f64 = if j <= self.max {self.pdf[j]} else {0.0};
+                    let other_val: f64 = if i - j <= self.original.max {self.original.pdf[i-j]} else {0.0};
+                    sum += self_val * other_val;
+                }
+                *v = sum;
             }
-            *v = sum;
-        }
+        );
 
         self.max = new_max;
         self.pdf = new_pdf;
@@ -45,14 +49,17 @@ impl Dist {
     pub fn double(&mut self) {
         let new_max: usize = self.max * 2;
         let mut new_pdf: Vec<f64> = vec![0.0; new_max + 1];
-        for (i, v) in new_pdf.iter_mut().enumerate() {
-            let mut sum: f64 = 0.0;
-            for j in 0..i+1 {
-                sum += (if j <= self.max {self.pdf[j]} else {0.0})
-                        * (if i - j <= self.max {self.pdf[i-j]} else {0.0})
+
+        new_pdf.par_iter_mut().enumerate().for_each(
+            |(i, v)| {
+                let mut sum: f64 = 0.0;
+                for j in 0..i+1 {
+                    sum += (if j <= self.max {self.pdf[j]} else {0.0})
+                            * (if i - j <= self.max {self.pdf[i-j]} else {0.0})
+                }
+                *v = sum;
             }
-            *v = sum;
-        }
+        );
 
         self.max = new_max;
         self.pdf = new_pdf;
