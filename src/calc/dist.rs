@@ -10,21 +10,13 @@ pub struct Dist {
 }
 
 impl Dist {
-    fn new(name: &'static str, max: usize, original: &'static ConstDist) -> Dist {
-        Dist {
-            max,
-            pdf: vec![0.0; max + 1],
-            name,
-            original
-        }
-    }
-
     pub fn from(name: &'static str, d: &'static ConstDist) -> Dist {
-        let mut out = Dist::new(name, d.max, d);
-        for (i, v) in (d.pdf[..d.max+1]).iter().enumerate() {
-            out.pdf[i] = *v;
+        Dist {
+            max: d.max,
+            pdf: Vec::from(d.pdf),
+            name,
+            original: d
         }
-        out
     }
 
     pub fn add_original(&mut self) {
