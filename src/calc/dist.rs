@@ -71,12 +71,12 @@ impl Dist {
     }
 
     // print name and a list of given percentiles.
-    pub fn print(&self, percentiles: Vec<f64>) {
+    pub fn print(&self, percentiles: &Vec<f64>) {
         println!("{}:", self.name);
         for p in percentiles {
-            let val = self.percentile(p);
-            println!("    {}th percentile: {} ({}s + {})",
-                (100.0 * p) as u8,
+            let val = self.percentile(*p);
+            println!("    {:.2}th percentile: {} ({}s + {})",
+                100.0 * p,
                 val,
                 val / 64,
                 val % 64

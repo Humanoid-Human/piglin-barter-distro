@@ -38,8 +38,14 @@ pub fn calculate_dist(n: u16) -> [Dist; 5] {
     list
 }
 
-pub fn print_dists(l: [Dist; 5]) {
+pub fn print_dists(l: &[Dist; 5], percentiles: &Vec<f64>) {
+    for p in percentiles {
+        if *p > 1.0 || *p < 0.0 {
+            println!("Bad percentile given: {:.2}", p);
+            return;
+        }
+    }
     for d in l {
-        d.print(vec![0.5, 0.9, 0.95, 0.99]);
+        d.print(percentiles);
     }
 }
