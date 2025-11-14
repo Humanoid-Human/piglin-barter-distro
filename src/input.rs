@@ -28,9 +28,9 @@ pub fn parse_input() -> Command {
     let mut input = String::new();
     io::stdin().read_line(&mut input).expect("Failed to read input.");
 
-    if input.len() < 1 { return Command::Error; }
+    if input.is_empty() { return Command::Error; }
 
-    match input.chars().nth(0).unwrap() {
+    match input.chars().next().unwrap() {
         'p' => Command::Print(percentiles(&input[2..])),
         'w' => Command::Write(String::from(&input[2..])),
         'e' => Command::Exit,
