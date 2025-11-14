@@ -1,6 +1,5 @@
 use rayon::prelude::*;
-
-const DENOM: f64 = 459.0;
+use crate::DENOM;
 
 pub struct Dist {
     pub max: usize,
@@ -92,11 +91,12 @@ impl Dist {
         }
     }
 
-    pub fn print_full(&self) {
-        println!("{}", self.name);
-        for (i, val) in self.pdf.iter().enumerate() {
-            println!("  {}: {}", i, *val);
+    pub fn to_csv(&self) -> String {
+        let mut s = String::new();
+        for (i, v) in self.pdf.iter().enumerate() {
+            s.push_str(&format!("{},{},{}\n", self.name, i, *v));
         }
+        s
     }
 }
 

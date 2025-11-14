@@ -1,5 +1,6 @@
-mod dist;
-use dist::*;
+pub mod dist;
+pub use dist::*;
+use super::DIST_NUM;
 
 // base values for the distributions we're interested in
 const GR_BS: ConstDist = ConstDist::from_bounds(16, 8, 40.0);
@@ -9,7 +10,7 @@ const OBS: ConstDist = ConstDist::from_bounds(1, 1, 40.0);
 const CRY: ConstDist = ConstDist::from_bounds(3, 1, 40.0);
 
 // calculate probability distributions for the given number of piglins
-pub fn calculate_dist(n: u16) -> [Dist; 5] {
+pub fn calculate_dist(n: u16) -> [Dist; DIST_NUM] {
     let gr_bs = Dist::from("Gravel & Blackstone", &GR_BS);
     let ss_nb = Dist::from("Soul Sand & Nether Brick", &SS_NB);
     let cry = Dist::from("Crying Obsidian", &CRY);
@@ -36,16 +37,4 @@ pub fn calculate_dist(n: u16) -> [Dist; 5] {
     );
 
     list
-}
-
-pub fn print_dists(l: &[Dist; 5], percentiles: &Vec<f64>) {
-    for p in percentiles {
-        if *p > 1.0 || *p < 0.0 {
-            println!("Bad percentile given: {:.2}", p);
-            return;
-        }
-    }
-    for d in l {
-        d.print(percentiles);
-    }
 }
